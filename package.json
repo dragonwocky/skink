@@ -1,0 +1,27 @@
+{
+  "name": "skink",
+  "version": "0.1.0",
+  "description": "A multi-purpose bot built with discord.js.",
+  "license": "MIT",
+  "author": "TheDragonRing <thedragonring.bod@gmail.com> (https://thedragonring.me)",
+  "homepage": "https://github.com/TheDragonRing/skink",
+  "bugs": {
+    "url": "https://github.com/TheDragonRing/skink/issues",
+    "email": "thedragonring.bod@gmail.com"
+  },
+  "main": "bot.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TheDragonRing/skink.git"
+  },
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "discord.js": "^11.4.2",
+    "nedb": "^1.8.0",
+    "moment": "^2.22.2",
+    "moment-duration-format": "^2.2.2",
+    "cleverbot.io": "^1.0.4"
+  }
+}
