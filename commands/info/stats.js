@@ -14,11 +14,11 @@ exports.meta = {
 
 exports.run = (bot, message, data) => {
   // sends bot uptime, user/server/channel count, software versions & author
-  const version = bot.pack.discord.version;
   require('moment-duration-format');
-  const duration = bot.pack.moment
-    .duration(bot.client.uptime)
-    .format('D [days], H [hrs], m [mins], s [secs]');
+  const version = bot.pack.discord.version,
+    duration = bot.pack.moment
+      .duration(bot.client.uptime)
+      .format('D [days], H [hrs], m [mins], s [secs]');
   message.channel.send(
     bot
       .embed()

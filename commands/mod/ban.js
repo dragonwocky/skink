@@ -20,18 +20,7 @@ exports.meta = {
 
 exports.run = (bot, message, data) => {
   // ban user
-  const user =
-    message.guild.members.get(message.args[0].replace(/\D/g, '')) ||
-    message.guild.members.find(
-      member =>
-        member.user.username.toLowerCase() === message.args[0].toLowerCase()
-    ) ||
-    message.guild.members.find(
-      member =>
-        member.nickname
-          ? member.nickname.toLowerCase() === message.args[0].toLowerCase()
-          : false
-    );
+  const user = bot.func.member(message, message.args[0]);
   if (!user || user.id === bot.client.user.id || !user.bannable)
     return message.channel.send(
       bot
@@ -39,11 +28,11 @@ exports.run = (bot, message, data) => {
         .setDescription(
           `:x: - ${message.author}, ${
             !user
-              ? `the first argument must be a valid user from this server!`
+              ? `the first argument must be a valid user from this server`
               : user.id === bot.client.user.id
-                ? `I can't ban myself!`
-                : `I can't ban ${user} (they may have a higher role than me)!`
-          }`
+                ? `I can't ban myself`
+                : `I can't ban ${user} (they may have a higher role than me)`
+          }!`
         )
     );
 

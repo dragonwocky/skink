@@ -21,18 +21,7 @@ exports.meta = {
 exports.run = (bot, message, data) => {
   // removes muted role from user
   const [, , role] = data,
-    user =
-      message.guild.members.get(message.args[0].replace(/\D/g, '')) ||
-      message.guild.members.find(
-        member =>
-          member.user.username.toLowerCase() === message.args[0].toLowerCase()
-      ) ||
-      message.guild.members.find(
-        member =>
-          member.nickname
-            ? member.nickname.toLowerCase() === message.args[0].toLowerCase()
-            : false
-      );
+    user = bot.func.member(message, message.args[0]);
   if (!user)
     return message.channel.send(
       bot
@@ -50,7 +39,7 @@ exports.run = (bot, message, data) => {
       bot
         .embed()
         .setDescription(
-          `:sound: - ${message.author}, ${user} has been unmuted!`
+          `:sound: - ${message.author}, ${user} has been unmuted.`
         )
     );
   } else

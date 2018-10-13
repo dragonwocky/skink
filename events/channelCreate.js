@@ -9,10 +9,33 @@ exports.trigger = (bot, channel) => {
   // ensure muted role exists, and is added to the new channel
   const fetchMuted = new Promise((resolve, reject) => {
     const fetchGuild = new Promise((res, rej) => {
-      bot.db.guilds.findOne({ _id: channel.guild.id }, (err, doc) => {
-        if (err) console.error(err);
-        res(doc);
-      });
+      bot.db.guilds.findOne(
+        {
+          _id: message.guild.id
+        },
+        (err, doc) => {
+          if (err) console.error(err);
+          if (!doc) {
+            bot.db.guilds.insert(
+              {
+                _id: message.guild.id,
+                disabled: {
+                  channels: [],
+                  commands: []
+                }
+              },
+              (err, doc) => {
+                if (err) console.error(err);
+                console.log(
+                  `- Added the guild ${message.guild.name}` +
+                  ` (ID: ${message.guild.id}) to the database.`
+                );
+                res(doc);
+              }
+            );
+          } else res(doc);
+        }
+      );
     });
     Promise.resolve(fetchGuild).then(guildDB => {
       const role =

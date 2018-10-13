@@ -58,7 +58,7 @@ exports.run = (bot, message, data) => {
         bot
           .embed()
           .setDescription(
-            `:spy: - ${message.author}, there is currently no mod role set!`
+            `:spy: - ${message.author}, there is currently no mod role set.`
           )
       );
     } else

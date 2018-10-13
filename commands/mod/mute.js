@@ -21,18 +21,7 @@ exports.meta = {
 exports.run = (bot, message, data) => {
   // give user muted role
   const [, , role] = data,
-    user =
-      message.guild.members.get(message.args[0].replace(/\D/g, '')) ||
-      message.guild.members.find(
-        member =>
-          member.user.username.toLowerCase() === message.args[0].toLowerCase()
-      ) ||
-      message.guild.members.find(
-        member =>
-          member.nickname
-            ? member.nickname.toLowerCase() === message.args[0].toLowerCase()
-            : false
-      );
+    user = bot.func.member(message, message.args[0]);
   if (!user)
     return message.channel.send(
       bot
@@ -69,7 +58,7 @@ exports.run = (bot, message, data) => {
       .setDescription(
         `:mute: - ${message.author}, ${user} has been muted${
           seconds ? ` for ${seconds} seconds` : ''
-        }!`
+        }.`
       )
   );
 };

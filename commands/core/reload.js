@@ -23,9 +23,9 @@ exports.run = (bot, message, data) => {
       bot
         .embed()
         .setDescription(
-          `:x: - ${
+          `:repeat: - ${
             message.author
-          }, the config, all events, and all commands have been reloaded!`
+          }, the config, all events, and all commands have been reloaded.`
         )
     );
   } else {
@@ -45,13 +45,13 @@ exports.run = (bot, message, data) => {
         bot
           .embed()
           .setDescription(
-            `:x: - ${message.author}, ${
+            `:repeat: - ${message.author}, ${
               message.args[0] === 'config'
                 ? 'the config'
                 : message.args[1]
                   ? `the ${message.args[0]} \`${message.args[1]}\``
                   : `all ${message.args[0]}s`
-            } has been reloaded!`
+            } has been reloaded.`
           )
       );
     } else

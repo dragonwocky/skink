@@ -9,33 +9,37 @@ A multi-purpose bot built with [discord.js](https://discord.js.org).
 - A set of moderation commands.
 - Cleverbot implementation: chat in DMs or with a command.
 - A couple of extra, fun commands.
+- A basic economy system to allow for future features that will make use of the currency.
 
 ### Commands
 
-| Name           | Description                                                                                                                      | Aliases      | Usage (`<required> [optional]`)         | Category |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------ | --------------------------------------- | -------- |
-| `help`         | Lists all commands and their usages.                                                                                             | `info`, `?`  | `help [command]`                        | Core     |
-| `invite`       | Gives a link to invite this bot to another server.                                                                               |              | `invite`                                | Core     |
-| `ping`         | Tests this bot's response time.                                                                                                  |              | `ping`                                  | Core     |
-| `eval`         | Executes inputted JS. Can only be run by the bot's owner.                                                                        |              | `eval <js>`                             | Core     |
-| `reload`       | Reloads various bot files. Can only be run by the bot's owner.                                                                   |              | `reload [config|command|event] [which]` | Core     |
-| `8ball`        | Roll the 8ball, and learn the answer to any yes/no question!                                                                     |              | `8ball <question>`                      | Fun      |
-| `icecream`     | I scream for icecream!                                                                                                           |              | `icecream [user]`                       | Fun      |
-| `talk`         | Talk to the bot.                                                                                                                 | `chat`, `t`  | `talk <message>`                        | Fun      |
-| `stats`        | Gives some bot statistics.                                                                                                       | `statistics` | `stats`                                 | Info     |
-| `serverinfo`   | Shows information about the server you're in.                                                                                    | `server`     | `serverinfo`                            | Info     |
-| `userinfo`     | Shows information about you or a specified user.                                                                                 | `user`       | `userinfo`                              | Info     |
-| `mod`          | Sets the moderator role. Any user with it can run commands in the `Mod` category (excluding this one) regardless of permissions. |              | `mod <role|current>`                    | Mod      |
-| `ban`          | Bans a user for a specified reason.                                                                                              |              | `ban <user> [reason`                    | Mod      |
-| `pardon`       | Pardons (unbans) a user for a specified reason.                                                                                  | `unban`      | `pardon <user> [reason]`                | Mod      |
-| `kick`         | Kicks a user for a specified reason.                                                                                             |              | `kick <user> [reason]`                  | Mod      |
-| `channel`      | Enables or disables use of the bot in a certain channel.                                                                         |              | `channel <enable|disable|list> [which]` | Mod      |
-| `command`      | Enables or disables use of a certain command in this server.                                                                     |              | `channel <enable|disable|list> [which]` | Mod      |
-| `mute`         | Mutes a user.                                                                                                                    |              | `mute <user> [seconds]`                 | Mod      |
-| `unmute`       | Unmutes a user.                                                                                                                  |              | `unmute <user>`                         | Mod      |
-| `prune`        | Removes the specified number of messages.                                                                                        |              | `prune <1-99>`                          | Mod      |
-| `serverprefix` | Sets the prefix for communicating with this bot on this server.                                                                  |              | `serverprefix <prefix>`                 | Mod      |
-| `userprefix`   | Sets your personal prefix for communicating with this bot.                                                                       | `prefix`     | `userprefix <prefix>`                   | Utils    |
+| Name           | Description                                                                                                                      | Aliases         | Usage (`<required> [optional]`)           | Category |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------- | ----------------------------------------- | -------- |
+| `help`         | Lists all commands and their usages.                                                                                             | `info`, `?`     | `help [command]`                          | Core     |
+| `invite`       | Gives a link to invite this bot to another server.                                                                               |                 | `invite`                                  | Core     |
+| `ping`         | Tests this bot's response time.                                                                                                  |                 | `ping`                                    | Core     |
+| `eval`         | Executes inputted JS. Can only be run by the bot's owner.                                                                        |                 | `eval <js>`                               | Core     |
+| `reload`       | Reloads various bot files. Can only be run by the bot's owner.                                                                   |                 | `reload [config\|command\|event] [which]` | Core     |
+| `8ball`        | Roll the 8ball, and learn the answer to any yes/no question!                                                                     |                 | `8ball <question>`                        | Fun      |
+| `icecream`     | I scream for icecream!                                                                                                           |                 | `icecream [user\|eat]`                    | Fun      |
+| `talk`         | Talk to the bot.                                                                                                                 | `chat`, `t`     | `talk <message>`                          | Fun      |
+| `stats`        | Gives some bot statistics.                                                                                                       | `statistics`    | `stats`                                   | Info     |
+| `serverinfo`   | Shows information about the server you're in.                                                                                    | `server`        | `serverinfo`                              | Info     |
+| `userinfo`     | Shows information about you or a specified user.                                                                                 | `user`          | `userinfo`                                | Info     |
+| `balance`      | Displays how many Scales you or another user has.                                                                                | `bal`, `scales` | `balance [user]`                          | Economy  |
+| `transfer`     | Transfers the specified number of Scales to another user.                                                                        | `pay`           | `transfer <user> <amount>`                | Economy  |
+| `daily`        | Collects or grants Scales (can only be used once a day).                                                                         |                 | `daily [user]`                            | Economy  |
+| `mod`          | Sets the moderator role. Any user with it can run commands in the `Mod` category (excluding this one) regardless of permissions. |                 | `mod <role\|current>`                     | Mod      |
+| `ban`          | Bans a user for a specified reason.                                                                                              |                 | `ban <user> [reason`                      | Mod      |
+| `pardon`       | Pardons (unbans) a user for a specified reason.                                                                                  | `unban`         | `pardon <user> [reason]`                  | Mod      |
+| `kick`         | Kicks a user for a specified reason.                                                                                             |                 | `kick <user> [reason]`                    | Mod      |
+| `channel`      | Enables or disables use of the bot in a certain channel.                                                                         |                 | `channel <enable\|disable\|list> [which]` | Mod      |
+| `command`      | Enables or disables use of a certain command in this server.                                                                     |                 | `channel <enable\|disable\|list> [which]` | Mod      |
+| `mute`         | Mutes a user.                                                                                                                    |                 | `mute <user> [seconds]`                   | Mod      |
+| `unmute`       | Unmutes a user.                                                                                                                  |                 | `unmute <user>`                           | Mod      |
+| `prune`        | Removes the specified number of messages.                                                                                        |                 | `prune <1-99>`                            | Mod      |
+| `serverprefix` | Sets the prefix for communicating with this bot on this server.                                                                  |                 | `serverprefix <prefix>`                   | Mod      |
+| `userprefix`   | Sets your personal prefix for communicating with this bot.                                                                       | `prefix`        | `userprefix <prefix>`                     | Utils    |
 
 #### Required Permissions
 
@@ -45,19 +49,19 @@ A multi-purpose bot built with [discord.js](https://discord.js.org).
 - `BAN_MEMBERS`: for banning users with the `ban` command and unbanning them with the `pardon` command.
 - `KICK_MEMBERS`: for banning users with the `kick` command.
 
-#### Feature Ideas
+#### Feature Ideas (aka TODO list)
 
-- Economy system.
 - Rooms: when enabled by mods, users can run `room` and create a channel in a set category named after them, having complete moderation over that channel.
-- Games: Hangman, Noughts & Crosses, Connect4, Battles
-- Tags (custom commands)
+- Games: Hangman, Noughts & Crosses, Connect4, Battles.
+- Tags (custom commands).
 - Ranks/experience system. Including decay, roles based on position not just level, maybe way to "battle" other users for their xp?
-- Starboard (add x starred msgs to x channel)
-- Pets
+- Starboard (add x starred msgs to x channel).
+- Pets.
 
 ### Known Issues
 
-- ?
+- Cleverbot responds too slowly.
+- Numerous response messages are ugly and/or either too generic or not generic enough.
 
 ### Contributing
 
@@ -69,7 +73,7 @@ _Skink is licensed under the MIT License (see the [LICENSE](LICENSE) file)._
 
 #### Config
 
-```json
+```js
 {
   "prefix": "..",
   // used in the help message
@@ -107,7 +111,7 @@ exports.meta = {
   // in seconds
   cooldown: 3,
   // force command perma-enabled
-  bypass: true,
+  bypass: false,
   // users with the mod role can run this command regardless of user perms
   moderator: false,
   // permissions required to run command (https://discord.js.org/#/docs/main/stable/class/Permissions?scrollTo=s-FLAGS)
@@ -123,7 +127,7 @@ exports.meta = {
   }
 };
 
-exports.run = (bot, message) => {
+exports.run = (bot, message, data) => {
   // do stuff
 };
 ```
@@ -145,6 +149,8 @@ bot {
   func {
     line() = // underlines string, overlines string or does both
     join() = // formats joining array, usually used with commas and a word like "and" or "or"
+    user() = // returns member from search or sender with data
+    member() = // returns member from search
   }
   pack {
     discord = // the discord.js package
@@ -183,7 +189,9 @@ users [
   {
     _id = // user ID
     prefix = // custom user prefix
+    scales = // scale balance (credits/tokens)
     icecream = // number of icecreams from icecream command
+    daily = // time user last ran daily command successfully
   }
 ]
 ```

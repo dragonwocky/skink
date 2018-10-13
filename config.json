@@ -1,5 +1,5 @@
 {
-  "prefix": "..",
+  "prefix": "--",
   "emoji": "🦎",
   "info": "Hey! I'm a multi-purpose bot created by [TheDragonRing](https://thedragonring.me) - for any further support head over to [my GitHub repository](https://github.com/TheDragonRing/skink) or say hello to the author on this [Discord server](https://discordapp.com/invite/g39aNQe) (or, if you want to add me to your own server, run `{GUILDPREFIX}invite`).",
   "invite": "https://discordapp.com/oauth2/authorize?client_id=492185124948148224&scope=bot&permissions=268463174",

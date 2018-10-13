@@ -22,6 +22,7 @@
     "nedb": "^1.8.0",
     "moment": "^2.22.2",
     "moment-duration-format": "^2.2.2",
-    "cleverbot.io": "^1.0.4"
+    "cleverbot.io": "^1.0.4",
+    "countdown": "^2.6.0"
   }
 }

@@ -31,6 +31,39 @@ const bot = {
           word +
           array.slice(-1)
         ).replace(/ +/g, ' ');
+    },
+    user: (bot, message, data, search) => {
+      let member = message.member;
+      if (search) member = bot.func.member(message, search);
+      if (!member) return false;
+      const user = member.user;
+      if (member.id === message.member.id)
+        return [member, member.user, data[0]];
+      return [
+        member,
+        member.user,
+        new Promise((resolve, reject) => {
+          bot.db.users.findOne({ _id: user.id }, (err, doc) => {
+            if (err) console.error(err);
+            resolve(doc);
+          });
+        })
+      ];
+    },
+    member: (message, search) => {
+      return search
+        ? message.guild.members.get(search.replace(/\D/g, '')) ||
+            message.guild.members.find(
+              member =>
+                member.user.username.toLowerCase() === search.toLowerCase()
+            ) ||
+            message.guild.members.find(
+              member =>
+                member.nickname
+                  ? member.nickname.toLowerCase() === search.toLowerCase()
+                  : false
+            )
+        : false;
     }
   },
   pack: {}
@@ -38,7 +71,7 @@ const bot = {
 
 // import packages
 bot.pack.moment = require('moment');
-bot.clever = require('cleverbot.io');
+bot.pack.countdown = require('countdown');
 bot.pack.discord = require('discord.js');
 bot.client = new bot.pack.discord.Client();
 bot.embed = () => {
@@ -174,6 +207,11 @@ bot.load = (what, which) => {
   return true;
 };
 bot.load();
+
+// set up cleverbot
+
+const cleverbot = require('cleverbot.io');
+bot.clever = new cleverbot(bot.config.cleverUser, bot.config.cleverKey);
 
 // log the bot in
 bot.client.login(bot.config.TOKEN);

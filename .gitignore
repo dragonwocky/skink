@@ -5,5 +5,5 @@
 node_modules/
 package-lock.json
 
-# ignore VS Code workspace
-*.code-workspace
+# ignore Visual Studio Code data files
+.vscode/

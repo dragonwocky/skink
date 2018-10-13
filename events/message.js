@@ -8,10 +8,9 @@ exports.trigger = (bot, message) => {
   // respond to direct message using cleverbot.io
   if (message.channel.type === 'dm') {
     if (message.author.bot) return;
-    const clever = new cleverbot(bot.config.cleverUser, bot.config.cleverKey);
-    clever.setNick(message.author.username);
-    clever.create((err, session) => {
-      clever.ask(message.content, (err, response) => {
+    bot.clever.setNick(message.author.username);
+    bot.clever.create((err, session) => {
+      bot.clever.ask(message.content, (err, response) => {
         if (err) console.error(err);
         message.channel.startTyping();
         setTimeout(() => {
@@ -32,7 +31,8 @@ exports.trigger = (bot, message) => {
             bot.db.users.insert(
               {
                 _id: message.author.id,
-                icecream: 0
+                icecream: 0,
+                scales: 0
               },
               (err, doc) => {
                 if (err) console.error(err);
@@ -44,7 +44,14 @@ exports.trigger = (bot, message) => {
                 resolve(doc);
               }
             );
-          } else resolve(doc);
+          } else
+            resolve({
+              ...{
+                icecream: 0,
+                scales: 0
+              },
+              ...doc
+            });
         });
       }),
       fetchGuild = new Promise((resolve, reject) => {
@@ -72,7 +79,16 @@ exports.trigger = (bot, message) => {
                   resolve(doc);
                 }
               );
-            } else resolve(doc);
+            } else
+              resolve({
+                ...{
+                  disabled: {
+                    channels: [],
+                    commands: []
+                  }
+                },
+                ...doc
+              });
           }
         );
       }),
@@ -80,20 +96,7 @@ exports.trigger = (bot, message) => {
         const mentions = message.content
           .trim()
           .split(/\s+/)
-          .map(
-            arg =>
-              message.guild.members.get(arg.replace(/\D/g, '')) ||
-              message.guild.members.find(
-                member =>
-                  member.user.username.toLowerCase() === arg.toLowerCase()
-              ) ||
-              message.guild.members.find(
-                member =>
-                  member.nickname
-                    ? member.nickname.toLowerCase() === arg.toLowerCase()
-                    : false
-              )
-          )
+          .map(arg => bot.func.member(message, arg))
           .filter(member => member)
           .map(member => member.user);
         if (mentions.length > 0) {
@@ -106,7 +109,8 @@ exports.trigger = (bot, message) => {
                     bot.db.users.insert(
                       {
                         _id: mentioned.id,
-                        icecream: 0
+                        icecream: 0,
+                        scales: 0
                       },
                       (err, doc) => {
                         if (err) console.error(err);
@@ -118,7 +122,14 @@ exports.trigger = (bot, message) => {
                         res(doc);
                       }
                     );
-                  } else res(doc);
+                  } else
+                    res({
+                      ...{
+                        icecream: 0,
+                        scales: 0
+                      },
+                      ...doc
+                    });
                 });
               });
             })
@@ -229,7 +240,7 @@ exports.trigger = (bot, message) => {
             !cmd.meta.bypass
           )
             return;
-          if (!cmd) return react('❌');
+          if (!cmd) return;
           // error if command doesn't exist, perms are missing
           // or required arguments are missing
           if (cmd.meta.restricted) {
