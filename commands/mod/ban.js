@@ -19,35 +19,35 @@ exports.meta = {
 };
 
 exports.run = (bot, message, data) => {
-  // ban user
-  const user = bot.func.member(message, message.args[0]);
-  if (!user || user.id === bot.client.user.id || !user.bannable)
+  // ban member
+  const member = bot.func.member(message, message.args[0]);
+  if (!member || member.id === bot.client.user.id || !member.bannable)
     return message.channel.send(
-      bot
-        .embed()
-        .setDescription(
-          `:x: - ${message.author}, ${
-            !user
-              ? `the first argument must be a valid user from this server`
-              : user.id === bot.client.user.id
-                ? `I can't ban myself`
-                : `I can't ban ${user} (they may have a higher role than me)`
-          }!`
-        )
+      `:x: | **${message.member.nickname || message.author.username}**, ${
+        !member
+          ? `the first argument must be a valid user from this server`
+          : member.id === bot.client.user.id
+            ? `I can't ban myself`
+            : `I can't ban ${member.nickname ||
+                member.user.username} (they may have a higher role than me)`
+      }!`
     );
 
   let reason = undefined;
   if (message.args[1])
     reason = message.args.slice(1, message.args.length).join(' ');
-  message.guild.ban(user, reason).then(member => {
+  message.guild.ban(member, reason).then(banned => {
     message.channel.send(
-      bot
-        .embed()
-        .setDescription(
-          `:hammer: - ${member.user} was banned by ${message.author}${
-            reason ? ` with the reason: \`${reason}\`` : ''
-          }`
-        )
+      `:hammer: | **${message.member.nickname ||
+        message.author.username}**, you banned **${banned}**${
+        reason ? ` with the reason: \`${reason}\`` : ''
+      }`
+    );
+    banned.send(
+      `:hammer: | You were banned from **${message.guild.name}** by **${message
+        .member.nickname || message.author.username}**${
+        reason ? ` with the reason: \`${reason}\`` : '.'
+      }`
     );
   });
 };

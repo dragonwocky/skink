@@ -6,7 +6,7 @@
 
 exports.meta = {
   name: 'daily',
-  description: 'Collects or grants Scales (can only be used once a day).',
+  description: 'Collects or grants scales (can only be used once a day).',
   category: 'Economy',
   usage: '[user]',
   cooldown: 3
@@ -19,11 +19,8 @@ exports.run = (bot, message, data) => {
     const [, user] = getMember;
     if (user.bot)
       return message.channel.send(
-        bot
-          .embed()
-          .setDescription(
-            `:robot: - ${message.author}, bots don't need scales!`
-          )
+        `:robot: | **${message.member.nickname ||
+          message.author.username}**, bots don't need scales!`
       );
     const today = date => {
       const now = new Date();
@@ -35,16 +32,14 @@ exports.run = (bot, message, data) => {
     };
     if (userDB.daily && today(new Date(userDB.daily)))
       return message.channel.send(
-        bot.embed().setDescription(
-          `:stopwatch: - ${
-            message.author
-          }, you've already used this command today! You can use it again in ${bot.pack.countdown(
-            bot.pack.moment
-              .utc()
-              .endOf('day')
-              .toDate()
-          )}.`
-        )
+        `:stopwatch: | **${message.member.nickname ||
+          message.author
+            .username}**, you've already used this command today! You can use it again in ${bot.pack.countdown(
+          bot.pack.moment
+            .utc()
+            .endOf('day')
+            .toDate()
+        )}.`
       );
 
     const generate = (min, max) => {
@@ -70,19 +65,12 @@ exports.run = (bot, message, data) => {
           (err, num, updated) => {
             if (err) console.error(err);
             message.channel.send(
-              bot
-                .embed()
-                .setDescription(
-                  `:moneybag: - ${user}, ${
-                    user.id === message.author.id
-                      ? 'you recieved your'
-                      : `${message.author} gave you their`
-                  } ${amount} daily Scales!`
-                )
-                .setFooter(
-                  `Now you have ${updated.scales} Scales`,
-                  user.displayAvatarURL
-                )
+              `:moneybag: | **${message.member.nickname ||
+                message.author.username}**, ${
+                user.id === message.author.id
+                  ? 'you recieved'
+                  : `you gave **${user}**`
+              } ${amount} daily scales!`
             );
           }
         );
@@ -90,12 +78,8 @@ exports.run = (bot, message, data) => {
     );
   } else
     message.channel.send(
-      bot
-        .embed()
-        .setDescription(
-          `:x: - ${
-            message.author
-          }, the first argument must be a valid user from this server!`
-        )
+      `:x: | **${message.member.nickname ||
+        message.author
+          .username}**, the first argument must be a valid user from this server!`
     );
 };

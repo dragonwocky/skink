@@ -74,14 +74,10 @@ exports.run = (bot, message, data) => {
           cmd.meta.aliases.includes(message.args[0].toLowerCase())
       );
     if (!command)
-      return message.channel.send(
-        bot
-          .embed()
-          .setDescription(
-            `:x: - ${message.author.username}, the command \`${
+      return message.channel.send(`:x: | **${message.member.nickname ||
+        message.author.username}**, the command \`${
               message.args[0]
             }\` does not exist!`
-          )
       );
     // send command data: description, aliases, usage, category & permissions
     const info = [];

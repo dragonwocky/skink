@@ -24,28 +24,19 @@ exports.run = (bot, message, data) => {
     user = bot.func.member(message, message.args[0]);
   if (!user)
     return message.channel.send(
-      bot
-        .embed()
-        .setDescription(
-          `:x: - ${
-            message.author
-          }, the first argument must be a valid user from this server!`
-        )
+      `:x: | **${message.member.nickname ||
+        message.author
+          .username}**, the first argument must be a valid user from this server!`
     );
-
   if (user.roles.get(role.id)) {
     user.removeRole(role);
     message.channel.send(
-      bot
-        .embed()
-        .setDescription(
-          `:sound: - ${message.author}, ${user} has been unmuted.`
-        )
+      `:sound: | **${message.member.nickname ||
+        message.author.username}**, ${user} has been unmuted.`
     );
   } else
     message.channel.send(
-      bot
-        .embed()
-        .setDescription(`:sound: - ${message.author}, ${user} was not muted!`)
+      `:sound: | **${message.member.nickname ||
+        message.author.username}**, ${user} was not muted!`
     );
 };

@@ -134,7 +134,6 @@ bot.load = (what, which) => {
           file => path.basename(file, '.js') === path.basename(which, '.js')
         )[0];
       }
-      console.log(file);
       delete require.cache[require.resolve(`.${path.sep}${file}`)];
       const command = require(`.${path.sep}${file}`);
       if (command && command.meta && command.run)
@@ -165,13 +164,13 @@ bot.load = (what, which) => {
       let file = walkSync('./events');
       if (
         !file.some(
-          file => path.basename(file, '.js') === path.basename(which, '.js')
+          name => path.basename(name, '.js') === path.basename(which, '.js')
         )
       )
         return false;
-      file.filter(
-        file => path.basename(file, '.js') === path.basename(which, '.js')
-      );
+      file = file.filter(
+        name => path.basename(name, '.js') === path.basename(which, '.js')
+      )[0];
       delete require.cache[require.resolve(`.${path.sep}${file}`)];
       const event = require(`.${path.sep}${file}`);
       if (event && event.trigger) {
@@ -209,7 +208,6 @@ bot.load = (what, which) => {
 bot.load();
 
 // set up cleverbot
-
 const cleverbot = require('cleverbot.io');
 bot.clever = new cleverbot(bot.config.cleverUser, bot.config.cleverKey);
 

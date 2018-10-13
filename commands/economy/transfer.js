@@ -7,7 +7,7 @@
 exports.meta = {
   name: 'transfer',
   aliases: ['pay'],
-  description: 'Transfers the specified number of Scales to another user.',
+  description: 'Transfers the specified number of scales to another user.',
   category: 'Economy',
   usage: '<user> <amount>',
   args: 2,
@@ -18,32 +18,23 @@ exports.run = (bot, message, data) => {
   const user = bot.func.member(message, message.args[0]);
   if (!user)
     return message.channel.send(
-      bot
-        .embed()
-        .setDescription(
-          `:x: - ${
-            message.author
-          }, the first argument must be a valid user from this server!`
-        )
+      `:x: | **${message.member.nickname ||
+        message.author
+          .username}**, the first argument must be a valid user from this server!`
     );
   if (user.user.bot)
     return message.channel.send(
-      bot
-        .embed()
-        .setDescription(`:robot: - ${message.author}, bots don't need scales!`)
+      `:robot: | **${message.member.nickname ||
+        message.author.username}**, bots don't need scales!`
     );
   let amount = false;
   if (message.args[1]) {
     amount = parseInt(message.args[1]);
     if (isNaN(amount) || amount <= 0)
       return message.channel.send(
-        bot
-          .embed()
-          .setDescription(
-            `:x: - ${
-              message.author
-            }, the second argument must be a number above 0!`
-          )
+        `:x: | **${message.member.nickname ||
+          message.author
+            .username}**, the second argument must be a number above 0!`
       );
   }
   const fetchUser = new Promise((resolve, reject) => {
@@ -55,11 +46,8 @@ exports.run = (bot, message, data) => {
   Promise.resolve(fetchUser).then(userDB => {
     if (amount > data[0].scales)
       return message.channel.send(
-        bot
-          .embed()
-          .setDescription(
-            `:x: - ${message.author}, you do not have that many Scales to give!`
-          )
+        `:x: | **${message.member.nickname ||
+          message.author.username}**, you do not have that many scales to give!`
       );
 
     // transfer an amount of scales (credits/tokens) to another user
@@ -76,13 +64,11 @@ exports.run = (bot, message, data) => {
           (error, number, document) => {
             if (err) console.error(err);
             message.channel.send(
-              bot
-                .embed()
-                .setDescription(
-                  `:moneybag: - ${user}, ${
-                    message.author
-                  } gave you ${amount} Scale${amount === 1 ? '' : 's'}.`
-                )
+              `:x: | **${message.member.nickname ||
+                message.author
+                  .username}**, you gave **${user}** ${amount} scale${
+                amount === 1 ? '' : 's'
+              }.`
             );
           }
         );

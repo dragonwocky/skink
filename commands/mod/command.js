@@ -22,13 +22,9 @@ exports.run = (bot, message, data) => {
   const [, guildDB] = data;
   if (!['enable', 'disable', 'list'].includes(message.args[0]))
     return message.channel.send(
-      bot
-        .embed()
-        .setDescription(
-          `:x: - ${
-            message.author
-          }, the first argument must be either \`enable\`, \`disable\` or \`list\`!`
-        )
+      `:x: | **${message.member.nickname ||
+        message.author
+          .username}**, the first argument must be either \`enable\`, \`disable\` or \`list\`!`
     );
   const command =
     bot.cmds.get(message.args[1]) ||
@@ -37,21 +33,19 @@ exports.run = (bot, message, data) => {
     );
   if (message.args[0] !== 'list' && !command)
     return message.channel.send(
-      bot.embed().setDescription(
-        `:x: - ${message.author}, ${
-          message.args[1]
-            ? `the command \`${
-                message.args[1]
-              }\` does not exist! Run \`${guildDB.prefix ||
-                bot.config.prefix}help\` to see a list.`
-            : `which command would you like to ${
-                message.args[0]
-              }? Try running \`${guildDB.prefix || bot.config.prefix}command ${
-                message.args[0]
-              } <command>\`
+      `:x: | **${message.member.nickname || message.author.username}**, ${
+        message.args[1]
+          ? `the command \`${
+              message.args[1]
+            }\` does not exist! Run \`${guildDB.prefix ||
+              bot.config.prefix}help\` to see a list.`
+          : `which command would you like to ${
+              message.args[0]
+            }? Try running \`${guildDB.prefix || bot.config.prefix}command ${
+              message.args[0]
+            } <command>\`
           `
-        }`
-      )
+      }`
     );
 
   switch (message.args[0]) {
@@ -64,27 +58,22 @@ exports.run = (bot, message, data) => {
         (err, num) => {
           if (err) console.error(err);
           message.channel.send(
-            bot
-              .embed()
-              .setDescription(
-                `:eye: - ${message.author}, the command \`${
-                  command.meta.name
-                }\` is enabled in this server.`
-              )
+            `:eye: | **${message.member.nickname ||
+              message.author.username}**, the command \`${
+              command.meta.name
+            }\` is enabled in this server.`
           );
         }
       );
       break;
+
     case 'disable':
       if (command.meta.bypass)
         return message.channel.send(
-          bot
-            .embed()
-            .setDescription(
-              `:x: - ${message.author}, the command \`${
-                message.args[1]
-              }\` cannot be disabled!`
-            )
+          `:x: | **${message.member.nickname ||
+            message.author.username}**, the command \`${
+            message.args[1]
+          }\` cannot be disabled!`
         );
       // disable command in guild
       bot.db.guilds.update(
@@ -94,17 +83,15 @@ exports.run = (bot, message, data) => {
         (err, num) => {
           if (err) console.error(err);
           message.channel.send(
-            bot
-              .embed()
-              .setDescription(
-                `:sleeping: - ${message.author}, the command \`${
-                  command.meta.name
-                }\` is disabled in this server.`
-              )
+            `:sleeping: | **${message.member.nickname ||
+              message.author.username}**, the command \`${
+              command.meta.name
+            }\` is disabled in this server.`
           );
         }
       );
       break;
+
     case 'list':
       let enabled = [],
         disabled = [];

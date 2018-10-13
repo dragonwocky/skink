@@ -23,24 +23,16 @@ exports.run = (bot, message, data) => {
   const amount = parseInt(message.args[0]);
   if (isNaN(amount) || amount < 1 || amount > 99)
     return message.channel.send(
-      bot
-        .embed()
-        .setDescription(
-          `:x: - ${
-            message.author
-          }, the first argument must be a number between 1 and 99!`
-        )
+      `:x: | **${message.member.nickname ||
+        message.author
+          .username}**, the first argument must be a number between 1 and 99!`
     );
   message.channel.bulkDelete(amount + 1, true).catch(err => {
     if (err) console.error(err);
     message.channel.send(
-      bot
-        .embed()
-        .setDescription(
-          `: x: - ${
-            message.author
-          }, an error occured while attempting to prune ${amount} messages:\n\`\`\`${err}\`\`\``
-        )
+      `:x: | **${message.member.nickname ||
+        message.author
+          .username}**, an error occured while attempting to prune ${amount} messages:\n\`\`\`${err}\`\`\``
     );
   });
 };

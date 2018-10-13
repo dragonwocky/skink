@@ -21,44 +21,32 @@ exports.meta = {
 exports.run = (bot, message, data) => {
   // give user muted role
   const [, , role] = data,
-    user = bot.func.member(message, message.args[0]);
-  if (!user)
+    member = bot.func.member(message, message.args[0]);
+  if (!member)
     return message.channel.send(
-      bot
-        .embed()
-        .setDescription(
-          `:x: - ${
-            message.author
-          }, the first argument must be a valid user from this server!`
-        )
+      `:x: | **${message.member.nickname ||
+        message.author
+          .username}**, the first argument must be a valid user from this server!`
     );
   let seconds = false;
   if (message.args[1]) {
     seconds = parseInt(message.args[1]);
     if (isNaN(seconds) || seconds <= 0)
       return message.channel.send(
-        bot
-          .embed()
-          .setDescription(
-            `:x: - ${
-              message.author
-            }, the second argument must be a number above 0!`
-          )
+        `:x: | **${message.member.nickname ||
+          message.author
+            .username}**, the second argument must be a number above 0!`
       );
   }
-
-  user.addRole(role);
+  member.addRole(role);
   if (seconds)
     bot.client.setTimeout(() => {
-      if (user.roles.get(role.id)) user.removeRole(role);
+      if (member.roles.get(role.id)) member.removeRole(role);
     }, seconds * 1000);
   message.channel.send(
-    bot
-      .embed()
-      .setDescription(
-        `:mute: - ${message.author}, ${user} has been muted${
-          seconds ? ` for ${seconds} seconds` : ''
-        }.`
-      )
+    `:mute: | **${message.member.nickname ||
+      message.author.username}**, **${member}** has been muted${
+      seconds ? ` for ${seconds} seconds` : ''
+    }.`
   );
 };

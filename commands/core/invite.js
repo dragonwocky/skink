@@ -14,10 +14,9 @@ exports.meta = {
 exports.run = (bot, message, data) => {
   // send invite link from config
   message.channel.send(
-    bot
-      .embed()
-      .setDescription(
-        `:bookmark: - Add me to your own server: ${bot.config.invite}`
-      )
+    `:wave: | **${message.member.nickname ||
+      message.author.username}**, add me to your own server: <${
+      bot.config.invite
+    }>`
   );
 };

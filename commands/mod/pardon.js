@@ -29,27 +29,19 @@ exports.run = (bot, message, data) => {
       );
     if (!user)
       return message.channel.send(
-        bot
-          .embed()
-          .setDescription(
-            `:x: - ${
-              message.author
-            }, the first argument must be a valid user banned from this server!`
-          )
+        `:x: | **${message.member.nickname ||
+          message.author
+            .username}**, the first argument must be a valid user banned from this server!`
       );
-
     let reason = undefined;
     if (message.args[1])
       reason = message.args.slice(1, message.args.length).join(' ');
     message.guild.unban(user, reason).then(pardoned => {
       message.channel.send(
-        bot
-          .embed()
-          .setDescription(
-            `:unlock: - ${pardoned} was pardoned by ${message.author}${
-              reason ? ` with the reason: \`${reason}\`` : ''
-            }`
-          )
+        `:unlock: | **${message.member.nickname ||
+          message.author.username}**, you pardoned **${pardoned}**${
+          reason ? ` with the reason: \`${reason}\`` : '.'
+        }`
       );
     });
   });

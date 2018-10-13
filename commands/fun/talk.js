@@ -22,7 +22,7 @@ exports.run = (bot, message, data) => {
       if (err) console.error(err);
       message.channel.startTyping();
       setTimeout(() => {
-        message.channel.send(response);
+        message.channel.send(`:speech_left: | ${response}`);
         message.channel.stopTyping();
       }, Math.random() * (1 - 3) + 1 * 1000);
     });

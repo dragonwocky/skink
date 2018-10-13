@@ -38,12 +38,8 @@ exports.run = (bot, message, data) => {
     'very doubtful'
   ];
   message.channel.send(
-    bot
-      .embed()
-      .setDescription(
-        `:8ball: - ${message.author}, ${
-          answers[Math.floor(Math.random() * answers.length)]
-        }.`
-      )
+    `:8ball: | **${message.member.nickname || message.author.username}**, ${
+      answers[Math.floor(Math.random() * answers.length)]
+    }.`
   );
 };

@@ -57,7 +57,7 @@ exports.run = (bot, message, data) => {
             `\n• **Nickname:** ${member.nickname ? member.nickname : 'None'}` +
             `\n• **Avatar URL:**  ${user.displayAvatarURL}` +
             `\n• **Status:** ${statuses[user.presence.status]}` +
-            `\n• **Balance:** ${userDB.scales} Scales${
+            `\n• **Balance:** ${userDB.scales} scales${
               userDB.scales === 1 ? '' : 's'
             }` +
             (userDB.prefix &&
@@ -70,12 +70,8 @@ exports.run = (bot, message, data) => {
     });
   } else
     message.channel.send(
-      bot
-        .embed()
-        .setDescription(
-          `:x: - ${
-            message.author
-          }, the first argument must be a valid user from this server!`
-        )
+      `:x: | **${message.member.nickname ||
+        message.author
+          .username}**, the first argument must be a valid user from this server!`
     );
 };

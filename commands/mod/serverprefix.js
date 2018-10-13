@@ -27,13 +27,10 @@ exports.run = (bot, message, data) => {
     (err, num) => {
       if (err) console.error(err);
       message.channel.send(
-        bot
-          .embed()
-          .setDescription(
-            `:triangular_flag_on_post: - ${
-              message.author
-            }, the server's prefix has been set to \`${message.args[0]}\``
-          )
+        `:triangular_flag_on_post: | **${message.member.nickname ||
+          message.author.username}**, the server's prefix has been set to \`${
+          message.args[0]
+        }\``
       );
     }
   );

@@ -274,35 +274,28 @@ exports.trigger = (bot, message) => {
                 .has(cmd.meta.perms.bot)
             )
               return message.channel.send(
-                bot
-                  .embed()
-                  .setDescription(
-                    `:x: - ${message.author}, I need the \`${bot.func.join(
-                      cmd.meta.perms.bot,
-                      '`, `',
-                      '` and `'
-                    )}` +
-                      `\` permission${
-                        cmd.meta.perms.bot.length === 1 ? '' : 's'
-                      } for this command to work!`
-                  )
+                `:x: | **${message.member.nickname ||
+                  message.author.username}**, I need the \`${bot.func.join(
+                  cmd.meta.perms.bot,
+                  '`, `',
+                  '` and `'
+                )}\` permission${
+                  cmd.meta.perms.bot.length === 1 ? '' : 's'
+                } for this command to work!`
               );
           }
           if (cmd.meta.args && message.args.length < cmd.meta.args)
             return message.channel.send(
-              bot
-                .embed()
-                .setDescription(
-                  `:x: - Incorrect usage ${message.author}, ${
-                    cmd.meta.usage
-                      ? `try this: \`${guildDB.prefix || bot.config.prefix}${
-                          cmd.meta.name
-                        } ${cmd.meta.usage}\``
-                      : `run\`${guildDB.prefix || bot.config.prefix}help ${
-                          cmd.meta.name
-                        }\` to see more info.`
-                  }`
-                )
+              `:x: | **${message.member.nickname ||
+                message.author.username}**, incorrect usage - ${
+                cmd.meta.usage
+                  ? `try this: \`${guildDB.prefix || bot.config.prefix}${
+                      cmd.meta.name
+                    } ${cmd.meta.usage}\``
+                  : `run \`${guildDB.prefix || bot.config.prefix}help ${
+                      cmd.meta.name
+                    }\` to see more info.`
+              }`
             );
 
           // check cooldowns

@@ -22,13 +22,9 @@ exports.run = (bot, message, data) => {
   const [, guildDB] = data;
   if (!['enable', 'disable', 'list'].includes(message.args[0]))
     return message.channel.send(
-      bot
-        .embed()
-        .setDescription(
-          `:x: - ${
-            message.author
-          }, the first argument must be either \`enable\`, \`disable\`, or \`list\`!`
-        )
+      `:x: | **${message.member.nickname ||
+        message.author
+          .username}**, the first argument must be either \`enable\`, \`disable\`, or \`list\`!`
     );
   let channel;
   if (message.args[1]) {
@@ -40,13 +36,9 @@ exports.run = (bot, message, data) => {
       );
     if (!channel)
       return message.channel.send(
-        bot
-          .embed()
-          .setDescription(
-            `:x: - ${
-              message.author
-            }, the second argument must be a valid channel in this server!`
-          )
+        `:x: | **${message.member.nickname ||
+          message.author
+            .username}**, the second argument must be a valid channel in this server!`
       );
   } else channel = message.channel;
 
@@ -60,15 +52,13 @@ exports.run = (bot, message, data) => {
         (err, num) => {
           if (err) console.error(err);
           message.channel.send(
-            bot
-              .embed()
-              .setDescription(
-                `:eye: - ${message.author}, the bot is enabled in ${channel}`
-              )
+            `:eye: | **${message.member.nickname ||
+              message.author.username}**, the bot is enabled in ${channel}`
           );
         }
       );
       break;
+
     case 'disable':
       // disable bot in channel
       bot.db.guilds.update(
@@ -78,17 +68,13 @@ exports.run = (bot, message, data) => {
         (err, num) => {
           if (err) console.error(err);
           message.channel.send(
-            bot
-              .embed()
-              .setDescription(
-                `:sleeping: - ${
-                  message.author
-                }, the bot is disabled in ${channel}`
-              )
+            `:sleeping: | **${message.member.nickname ||
+              message.author.username}**, the bot is disabled in ${channel}`
           );
         }
       );
       break;
+
     case 'list':
       // list enabled/disabled channels
       let enabled = [],

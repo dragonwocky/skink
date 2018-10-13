@@ -23,7 +23,7 @@ exports.run = (bot, message, data) => {
     bot
       .embed()
       .addField(
-        ':bar_chart: Statistics',
+        ':bar_chart: Bot Statistics',
         `• **Memory Usage:** ${(
           process.memoryUsage().heapUsed /
           1024 /

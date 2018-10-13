@@ -20,49 +20,34 @@ exports.run = (bot, message, data) => {
   if (!message.args[0]) {
     bot.load();
     message.channel.send(
-      bot
-        .embed()
-        .setDescription(
-          `:repeat: - ${
-            message.author
-          }, the config, all events, and all commands have been reloaded.`
-        )
+      `:repeat: | **${message.member.nickname ||
+        message.author
+          .username}**, the config, all events, and all commands have been reloaded.`
     );
   } else {
     if (!['config', 'command', 'event'].includes(message.args[0]))
       return message.channel.send(
-        bot
-          .embed()
-          .setDescription(
-            `:x: - ${
-              message.author
-            }, the first argument must be either \`config\`, \`command\`, or \`event\`!`
-          )
+        `:x: | **${message.member.nickname || message.author.username}**, - ${
+          message.author
+        }, the first argument must be either \`config\`, \`command\`, or \`event\`!`
       );
     const load = bot.load(message.args[0], message.args[1]);
     if (load) {
       message.channel.send(
-        bot
-          .embed()
-          .setDescription(
-            `:repeat: - ${message.author}, ${
-              message.args[0] === 'config'
-                ? 'the config'
-                : message.args[1]
-                  ? `the ${message.args[0]} \`${message.args[1]}\``
-                  : `all ${message.args[0]}s`
-            } has been reloaded.`
-          )
+        `:repeat: | **${message.member.nickname ||
+          message.author.username}**, ${
+          message.args[0] === 'config'
+            ? 'the config has'
+            : message.args[1]
+              ? `the ${message.args[0]} \`${message.args[1]}\` has`
+              : `all ${message.args[0]}s have`
+        } been reloaded.`
       );
     } else
       message.channel.send(
-        bot
-          .embed()
-          .setDescription(
-            `:x: - ${message.author}, the ${message.args[0]} \`${
-              message.args[1]
-            }\` does not exist!`
-          )
+        `:x: | **${message.member.nickname || message.author.username}**, the ${
+          message.args[0]
+        } \`${message.args[1]}\` does not exist!`
       );
   }
 };
