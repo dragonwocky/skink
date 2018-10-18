@@ -4,17 +4,15 @@
  * Copyright (c) 2018 TheDragonRing <thedragonring.bod@gmail.com>, under the MIT License.
  */
 
-exports.meta = {
+exports = {
   name: 'command',
   description: 'Enables or disables use of a certain command in this server.',
   usage: '<enable|disable|list> [which]',
   category: 'Mod',
   args: 1,
   cooldown: 3,
-  bypass: true,
-  moderator: true,
-  perms: {
-    user: ['MANAGE_CHANNELS']
+  restricted: {
+    mod: true
   }
 };
 
@@ -27,22 +25,27 @@ exports.run = (bot, message, data) => {
           .username}**, the first argument must be either \`enable\`, \`disable\` or \`list\`!`
     );
   const command =
-    bot.cmds.get(message.args[1]) ||
-    bot.cmds.find(
-      cmd => cmd.meta.aliases && cmd.meta.aliases.includes(message.args[1])
-    );
+    command === 'help'
+      ? bot.cmds.help
+      : bot.cmds.general.get(message.args[1]) ||
+        bot.cmds.general.find(
+          cmd => cmd.aliases && cmd.aliases.includes(message.args[1])
+        );
   if (message.args[0] !== 'list' && !command)
     return message.channel.send(
       `:x: | **${message.member.nickname || message.author.username}**, ${
         message.args[1]
-          ? `the command \`${
-              message.args[1]
-            }\` does not exist! Run \`${guildDB.prefix ||
-              bot.config.prefix}help\` to see a list.`
+          ? `the command \`${message.args[1]}\` does not exist! Run \`${
+              guildDB.prefix
+                ? guildDB.prefix.general
+                : 0 || bot.config.prefix.general
+            }help\` to see a list.`
           : `which command would you like to ${
               message.args[0]
-            }? Try running \`${guildDB.prefix || bot.config.prefix}command ${
-              message.args[0]
+            }? Try running \`${
+              guildDB.prefix
+                ? guildDB.prefix.general
+                : 0 || bot.config.prefix.general
             } <command>\`
           `
       }`
@@ -53,14 +56,14 @@ exports.run = (bot, message, data) => {
       // enable command in guild
       bot.db.guilds.update(
         { _id: message.guild.id },
-        { $pull: { 'disabled.commands': command.meta.name } },
+        { $pull: { 'disabled.commands': command.name } },
         {},
         (err, num) => {
           if (err) console.error(err);
           message.channel.send(
             `:eye: | **${message.member.nickname ||
               message.author.username}**, the command \`${
-              command.meta.name
+              command.name
             }\` is enabled in this server.`
           );
         }
@@ -68,7 +71,7 @@ exports.run = (bot, message, data) => {
       break;
 
     case 'disable':
-      if (command.meta.bypass)
+      if (command.bypass)
         return message.channel.send(
           `:x: | **${message.member.nickname ||
             message.author.username}**, the command \`${
@@ -78,14 +81,14 @@ exports.run = (bot, message, data) => {
       // disable command in guild
       bot.db.guilds.update(
         { _id: message.guild.id },
-        { $addToSet: { 'disabled.commands': command.meta.name } },
+        { $addToSet: { 'disabled.commands': command.name } },
         {},
         (err, num) => {
           if (err) console.error(err);
           message.channel.send(
             `:sleeping: | **${message.member.nickname ||
               message.author.username}**, the command \`${
-              command.meta.name
+              command.name
             }\` is disabled in this server.`
           );
         }
@@ -96,9 +99,9 @@ exports.run = (bot, message, data) => {
       let enabled = [],
         disabled = [];
       Array.from(bot.cmds.values()).forEach(cmd => {
-        if (guildDB.disabled.commands.includes(cmd.meta.name)) {
-          disabled.push(cmd.meta.name);
-        } else enabled.push(cmd.meta.name);
+        if (guildDB.disabled.commands.includes(cmd.name)) {
+          disabled.push(cmd.name);
+        } else enabled.push(cmd.name);
       });
       let embed = bot.embed();
       if (enabled.length)

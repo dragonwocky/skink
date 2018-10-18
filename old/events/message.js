@@ -39,7 +39,9 @@ exports.trigger = (bot, message) => {
                 console.log(
                   `- Added the ${message.author.bot ? 'bot' : 'user'} ${
                     message.author.username
-                  }` + ` (ID: ${message.author.id}) to the database.`
+                  }#${mentioned.tag} (ID: ${
+                    message.author.id
+                  }) to the database.`
                 );
                 resolve(doc);
               }
@@ -73,8 +75,9 @@ exports.trigger = (bot, message) => {
                 (err, doc) => {
                   if (err) console.error(err);
                   console.log(
-                    `- Added the guild ${message.guild.name}` +
-                      ` (ID: ${message.guild.id}) to the database.`
+                    `- Added the guild ${message.guild.name} (ID: ${
+                      message.guild.id
+                    }) to the database.`
                   );
                   resolve(doc);
                 }
@@ -117,7 +120,9 @@ exports.trigger = (bot, message) => {
                         console.log(
                           `- Added the ${mentioned.bot ? 'bot' : 'user'} ${
                             mentioned.username
-                          }` + ` (ID: ${mentioned.id}) to the database.`
+                          }#${mentioned.tag} (ID: ${
+                            mentioned.id
+                          }) to the database.`
                         );
                         res(doc);
                       }
@@ -133,7 +138,11 @@ exports.trigger = (bot, message) => {
                 });
               });
             })
-          ).then(resolve);
+          ).then(data => {
+            const mentioned = bot.collection();
+            data.forEach(db => mentioned.set(db._id, db));
+            resolve(mentioned);
+          });
         } else resolve(0);
       });
 
@@ -168,7 +177,6 @@ exports.trigger = (bot, message) => {
         } else resolve(role);
       });
       Promise.resolve(fetchMuted).then(muted => {
-        data[2] = muted;
         const updateMuted = muted
           ? new Promise((resolve, reject) => {
               bot.db.guilds.update(
@@ -200,111 +208,121 @@ exports.trigger = (bot, message) => {
             )
               message.react(emoji);
           };
+
           // check if user is using a prefix associated with the bot
-          let prefix = guildDB.prefix || bot.config.prefix;
-          if (bot.cmds.get('help')) {
-            if (
-              message.content === bot.config.prefix + 'help' ||
-              message.content.startsWith(`${bot.config.prefix}${'help'} `)
-            )
-              prefix = bot.config.prefix;
-            if (bot.cmds.get('help').meta.aliases)
-              bot.cmds.get('help').meta.aliases.forEach(alias => {
-                if (message.content.startsWith(bot.config.prefix + alias))
-                  prefix = bot.config.prefix;
-              });
-          }
-          if (!message.content.startsWith(prefix)) {
-            if (message.content.startsWith(userDB.prefix)) {
-              prefix = userDB.prefix;
-            } else if (message.content.startsWith(`<@${bot.client.user.id}>`)) {
-              prefix = `<@${bot.client.user.id}>`;
-            } else return;
-          }
+          const prefixes = [
+            guildDB.prefix,
+            userDB.prefix,
+            bot.config.prefix.general,
+            bot.config.prefix.mod,
+            `<@${bot.client.user.id}>`
+          ];
+          let prefix;
+          prefixes.forEach(pre => {
+            if (message.content.startsWith(pre)) prefix = pre;
+          });
+          if (message.content.startsWith(`${bot.config.prefix}help`))
+            prefix = bot.config.prefix;
+          if (bot.cmds.get('help').aliases)
+            bot.cmds.get('help').aliases.forEach(alias => {
+              if (message.content.startsWith(bot.config.prefix + alias))
+                prefix = bot.config.prefix;
+            });
+          if (!prefix) return;
           // get command
           message.args = message.content
             .slice(prefix.length)
             .trim()
             .split(/\s+/);
-          const name = message.args.shift().toLowerCase(),
-            cmd =
-              bot.cmds.get(name) ||
-              bot.cmds.find(
-                cmd => cmd.meta.aliases && cmd.meta.aliases.includes(name)
-              );
           // message.flags = message.args.filter(arg => arg[0] === '-');
-          // check if channel/command is disabled
+          const name = message.args.shift().toLowerCase(),
+            command =
+              bot.cmds.get(name) ||
+              bot.cmds.find(cmd => cmd.aliases && cmd.aliases.includes(name));
+          if (!command) return;
+          let type = 'general';
+
+          // permission checking:
+          // - distinguish between mod commands and general commands
+          // - check bot has perms to run command
+          // - check if command is disabled
+          // - check if command is restricted to or from user
           if (
-            (guildDB.disabled.channels.includes(message.channel.id) ||
-              (cmd && guildDB.disabled.commands.includes(cmd.meta.name))) &&
-            !cmd.meta.bypass
+            (command.only && !command.only.includes(message.author.id)) ||
+            (comand.blocked && comand.blocked.includes(message.author.id))
           )
-            return;
-          if (!cmd) return;
-          // error if command doesn't exist, perms are missing
-          // or required arguments are missing
-          if (cmd.meta.restricted) {
+            return react('❌');
+          if (prefix === bot.config.prefix.mod) type = 'mod';
+          if (command.mod) {
+            if (prefix === `<@${bot.client.user.id}>`) type = 'mod';
+            if (type !== 'mod') return;
             if (
-              cmd.meta.restricted.to &&
-              !cmd.meta.restricted.to.includes(message.author.id)
-            )
-              return react('❌');
-            if (
-              cmd.meta.restricted.from &&
-              cmd.meta.restricted.from.includes(message.author.id)
-            )
-              return react('❌');
-          }
-          if (cmd.meta.perms) {
-            if (
-              cmd.meta.perms.user &&
+              !message.member.roles.get(
+                guildDB.roles ? guildDB.roles.mod : 0
+              ) &&
               !message.channel
                 .permissionsFor(message.author.id)
-                .has(cmd.meta.perms.user)
-            ) {
-              if (cmd.meta.moderator && guildDB.roles) {
-                if (!message.member.roles.get(guildDB.roles.mod))
-                  return react('❌');
-              } else return react('❌');
-            }
+                .has(['ADMINISTRATOR'])
+            )
+              return react('❌');
+          } else {
+            if (type === 'mod' && command.name !== 'help') return;
             if (
-              cmd.meta.perms.bot &&
+              guildDB.disabled &&
+              ((guildDB.disabled.channels
+                ? guildDB.disabled.channels
+                : []
+              ).includes(message.channel.id) ||
+                (guildDB.disabled.commands
+                  ? guildDB.disabled.commands
+                  : []
+                ).includes(command ? command.name : 0))
+            )
+              return;
+            if (
+              command.perms &&
               !message.channel
                 .permissionsFor(bot.client.user.id)
-                .has(cmd.meta.perms.bot)
+                .has(command.perms)
             )
               return message.channel.send(
                 `:x: | **${message.member.nickname ||
                   message.author.username}**, I need the \`${bot.func.join(
-                  cmd.meta.perms.bot,
+                  command.perms,
                   '`, `',
                   '` and `'
                 )}\` permission${
-                  cmd.meta.perms.bot.length === 1 ? '' : 's'
+                  command.perms.length === 1 ? '' : 's'
                 } for this command to work!`
               );
           }
-          if (cmd.meta.args && message.args.length < cmd.meta.args)
+
+          // check if command arguments are missing
+          if (command.args && message.args.length < command.args)
             return message.channel.send(
               `:x: | **${message.member.nickname ||
                 message.author.username}**, incorrect usage - ${
-                cmd.meta.usage
-                  ? `try this: \`${guildDB.prefix || bot.config.prefix}${
-                      cmd.meta.name
-                    } ${cmd.meta.usage}\``
-                  : `run \`${guildDB.prefix || bot.config.prefix}help ${
-                      cmd.meta.name
-                    }\` to see more info.`
+                command.usage
+                  ? `try this: \`${
+                      type === 'mod'
+                        ? bot.config.prefix.mod
+                        : guildDB.prefix || bot.config.prefix.general
+                    }${command.name} ${command.usage}\``
+                  : `run \`${
+                      type === 'mod'
+                        ? bot.config.prefix.mod
+                        : guildDB.prefix || bot.config.prefix.general
+                    }help ${command.name}\` to see more info.`
               }`
             );
 
           // check cooldowns
           if (!bot.cooldowns) bot.cooldowns = bot.collection();
-          if (!bot.cooldowns.has(cmd.meta.name))
-            bot.cooldowns.set(cmd.meta.name, bot.collection());
+          if (!bot.cooldowns.has(command.name))
+            bot.cooldowns.set(command.name, bot.collection());
           const now = Date.now(),
-            timestamps = bot.cooldowns.get(cmd.meta.name),
-            seconds = (cmd.meta.cooldown || 0) * 1000;
+            timestamps = bot.cooldowns.get(command.name),
+            seconds = (command.cooldown || 0) * 1000;
           if (!timestamps.has(message.author.id)) {
             timestamps.set(message.author.id, now);
             setTimeout(() => timestamps.delete(message.author.id), seconds);
@@ -316,8 +334,9 @@ exports.trigger = (bot, message) => {
             setTimeout(() => timestamps.delete(message.author.id), seconds);
           }
           // run command
+          data.push(type, muted);
           try {
-            cmd.run(bot, message, data);
+            command.run(bot, message, data);
           } catch (err) {
             console.error(err);
             react('❌');

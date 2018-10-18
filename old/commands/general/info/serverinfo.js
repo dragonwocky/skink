@@ -18,7 +18,7 @@ exports.run = (bot, message, data) => {
   const embed = bot
     .embed()
     .setAuthor(
-      `Server Name: ${message.guild.name} (ID: ${message.guild.id})`,
+      `${message.guild.name} (ID: ${message.guild.id})`,
       message.guild.iconURL
     )
     .setThumbnail(message.guild.iconURL);

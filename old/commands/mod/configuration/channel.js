@@ -4,17 +4,15 @@
  * Copyright (c) 2018 TheDragonRing <thedragonring.bod@gmail.com>, under the MIT License.
  */
 
-exports.meta = {
+exports = {
   name: 'channel',
   description: 'Enables or disables use of the bot in a certain channel.',
   usage: '<enable|disable|list> [which]',
   category: 'Mod',
   args: 1,
   cooldown: 3,
-  bypass: true,
-  moderator: true,
-  perms: {
-    user: ['MANAGE_CHANNELS']
+  restricted: {
+    mod: true
   }
 };
 

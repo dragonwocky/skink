@@ -96,7 +96,7 @@ bot.db.guilds.ensureIndex({ fieldName: '_id', unique: true });
 bot.db.guilds.persistence.setAutocompactionInterval(90000);
 
 // load config, commands & events
-bot.load = (what, which) => {
+bot.load = (what, which, type) => {
   const walkSync = (dir, filelist = []) =>
     [].concat.apply(
       [],
@@ -118,12 +118,12 @@ bot.load = (what, which) => {
     if (which) {
       let file = (
         bot.cmds.get(which) ||
-        bot.cmds.find(
-          cmd => cmd.meta.aliases && cmd.meta.aliases.includes(which)
-        ) || { file: false }
+        bot.cmds.find(cmd => cmd.aliases && cmd.aliases.includes(which)) || {
+          file: false
+        }
       ).file;
       if (!file) {
-        file = walkSync('./commands');
+        file = walkSync('./commands/');
         if (
           !file.some(
             file => path.basename(file, '.js') === path.basename(which, '.js')
@@ -136,10 +136,15 @@ bot.load = (what, which) => {
       }
       delete require.cache[require.resolve(`.${path.sep}${file}`)];
       const command = require(`.${path.sep}${file}`);
-      if (command && command.meta && command.run)
-        bot.cmds.set(command.meta.name, { ...command, ...{ file: file } });
+      if (command && command.name && command.run)
+        bot.cmds.set(command.name, {
+          ...command,
+          ...{ file: file }
+        });
       console.log(
-        `- loaded command: ${((file = file.split(path.sep)),
+        `- loaded ${
+          command.mod ? 'mod' : 'general'
+        } command: ${((file = file.split(path.sep)),
         file.slice(1, file.length).join(path.sep))}`
       );
     } else {
@@ -149,8 +154,8 @@ bot.load = (what, which) => {
         if (path.extname(file) === '.js') {
           delete require.cache[require.resolve(`.${path.sep}${file}`)];
           const command = require(`.${path.sep}${file}`);
-          if (command && command.meta && command.run)
-            bot.cmds.set(command.meta.name, {
+          if (command && command.name && command.run)
+            bot.cmds.set(command.name, {
               ...command,
               ...{ file: file }
             });

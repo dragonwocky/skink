@@ -56,6 +56,15 @@ exports.run = (bot, message, data) => {
         message.guild.roles.get(message.args[0].replace(/\D/g, '')) ||
         message.guild.roles.find(
           role => role.name.toLowerCase() === message.args[0].toLowerCase()
+        ) ||
+        message.guild.roles.find(
+          role =>
+            (role.name.toLowerCase()[0] === '@'
+              ? role.name.toLowerCase().slice(1)
+              : role.name.toLowerCase()) ===
+            (message.args[0].toLowerCase()[0] === '@'
+              ? message.args[0].toLowerCase().slice(1)
+              : message.args[0].toLowerCase())
         );
       if (!role)
         return message.channel.send(

@@ -57,7 +57,7 @@ exports.run = (bot, message, data) => {
             `\n• **Nickname:** ${member.nickname ? member.nickname : 'None'}` +
             `\n• **Avatar URL:**  ${user.displayAvatarURL}` +
             `\n• **Status:** ${statuses[user.presence.status]}` +
-            `\n• **Balance:** ${userDB.scales} scales${
+            `\n• **Balance:** ${userDB.scales} scale${
               userDB.scales === 1 ? '' : 's'
             }` +
             (userDB.prefix &&
