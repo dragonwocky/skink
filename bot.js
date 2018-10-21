@@ -1,90 +1,22 @@
 /*
- * Skink - A multi-purpose bot built with discord.js.
+ * Skink - A multi-purpose Discord bot.
  * =======================================================
- * Copyright (c) 2018 TheDragonRing <thedragonring.bod@gmail.com>, under the MIT License.
+ * Copyright (c) 2018 TheDragonRing <thedragonring.bod@gmail.com>, under the ISC License.
  */
 
-'use strict';
-
-// variable for global use
-const bot = {
-  func: {
-    // 0: both, 1: top, 2: bottom
-    line: (string, char, where) => {
-      let line = char;
-      for (let i = 1; i < string.length; i++) {
-        line += char;
-      }
-      if (where == 0) return `${line}\n${string}\n${line}`;
-      if (where == 1) return `${line}\n${string}`;
-      if (where == 2) return `${string}\n${line}`;
-      return string;
-    },
-    // (['a', 'b', 'c'], ', ', ' and ') =>  'a, b, and c'
-    join: (array, char, word) => {
-      if (array.length === 1) return array[0];
-      if (array.length === 2) return array.join(word);
-      if (array.length > 2)
-        return (
-          array.slice(0, -1).join(char) +
-          char +
-          word +
-          array.slice(-1)
-        ).replace(/ +/g, ' ');
-    },
-    user: (bot, message, data, search) => {
-      let member = message.member;
-      if (search) member = bot.func.member(message, search);
-      if (!member) return false;
-      const user = member.user;
-      if (member.id === message.member.id)
-        return [member, member.user, data[0]];
-      return [
-        member,
-        member.user,
-        new Promise((resolve, reject) => {
-          bot.db.users.findOne({ _id: user.id }, (err, doc) => {
-            if (err) console.error(err);
-            resolve(doc);
-          });
-        })
-      ];
-    },
-    member: (message, search) => {
-      return search
-        ? message.guild.members.get(search.replace(/\D/g, '')) ||
-            message.guild.members.find(
-              member =>
-                member.user.username.toLowerCase() === search.toLowerCase()
-            ) ||
-            message.guild.members.find(
-              member =>
-                member.nickname
-                  ? member.nickname.toLowerCase() === search.toLowerCase()
-                  : false
-            )
-        : false;
-    }
-  },
-  pack: {}
-};
-
-// import packages
-bot.pack.moment = require('moment');
-bot.pack.countdown = require('countdown');
-bot.pack.discord = require('discord.js');
-bot.client = new bot.pack.discord.Client();
-bot.embed = () => {
-  return new bot.pack.discord.RichEmbed().setColor(bot.config.embedColour);
-};
-bot.collection = () => {
-  return new bot.pack.discord.Collection();
-};
-
 const fs = require('fs'),
-  path = require('path');
+  path = require('path'),
+  { promisify } = require('util'),
+  secrets = require('./resources/secrets.json');
 
-// set up database
+const Eris = require('eris'),
+  bot = new Eris.Client(secrets.TOKEN, {
+    getAllUsers: true,
+    defaultImageFormat: 'png',
+    defaultImageSize: 1024
+  });
+bot.collection = Eris.Collection;
+
 const Datastore = require('nedb');
 bot.db = {
   users: new Datastore({ filename: '.data/users.db', autoload: true }),
@@ -94,66 +26,108 @@ bot.db.users.ensureIndex({ fieldName: '_id', unique: true });
 bot.db.users.persistence.setAutocompactionInterval(90000);
 bot.db.guilds.ensureIndex({ fieldName: '_id', unique: true });
 bot.db.guilds.persistence.setAutocompactionInterval(90000);
+[
+  'loadDatabase',
+  'insert',
+  'find',
+  'findOne',
+  'count',
+  'update',
+  'remove',
+  'ensureIndex',
+  'removeIndex'
+].forEach(method => {
+  bot.db.guilds[`${method}Async`] = promisify(bot.db.guilds[method]).bind(
+    bot.db.guilds
+  );
+  bot.db.users[`${method}Async`] = promisify(bot.db.users[method]).bind(
+    bot.db.users
+  );
+});
 
-// load config, commands & events
-bot.load = (what, which, type) => {
-  const walkSync = (dir, filelist = []) =>
-    [].concat.apply(
-      [],
-      fs
-        .readdirSync(dir)
-        .map(
-          file =>
-            fs.statSync(path.join(dir, file)).isDirectory()
-              ? walkSync(path.join(dir, file))
-              : path.join(dir, file)
-        )
-    );
-  if (!what || what === 'config') {
-    bot.config = require('./config.json');
-    delete require.cache[require.resolve('./config.json')];
+let utils = require('./resources/utils.js');
+for (const util in utils)
+  if (utils.hasOwnProperty(util)) utils[util] = utils[util].bind(bot);
+bot.utils = utils;
+
+bot.load = async (what, which) => {
+  async function config() {
+    delete require.cache[require.resolve('./resources/config.json')];
+    bot.config = require('./resources/config.json');
     console.log('- loaded config');
   }
-  if (!what || what == 'command') {
+  async function events() {
+    let type = 'load';
+    const files = await utils.walk('./events');
     if (which) {
+      which = path.basename(which, '.js');
+      const file = file.filter(name => path.basename(name, '.js') === which)[0];
+      if (!file || !file.name.endsWith('js')) return false;
+      delete require.cache[require.resolve(`.${path.sep}${file}`)];
+      const event = require(`.${path.sep}${file}`);
+      if (event && event.trigger) {
+        if (bot.listeners(which)[0]) {
+          type = 'reload';
+          bot.removeListener(which, bot.listeners(which)[0]);
+        }
+        bot.on(which, (...args) => event.trigger(bot, ...args));
+        console.log(
+          `- ${type}ed event: ${((file = file.split(path.sep)),
+          file.slice(1, file.length).join(path.sep))}`
+        );
+      }
+    } else {
+      for (let file of files) {
+        if (path.extname(file) === '.js') {
+          delete require.cache[require.resolve(`.${path.sep}${file}`)];
+          const event = require(`.${path.sep}${file}`);
+          file = path.basename(file, '.js');
+          if (event && event.trigger) {
+            if (bot.listeners(file)[0]) {
+              type = 'reload';
+              bot.removeListener(file, bot.listeners(file)[0]);
+            }
+            bot.on(file, (...args) => event.trigger(bot, ...args));
+          }
+        }
+      }
+      console.log(`- ${type}ed events`);
+    }
+  }
+  async function commands() {
+    let type = 'load';
+    const files = await utils.walk('./commands');
+    if (which) {
+      which = path.basename(which, '.js');
       let file = (
         bot.cmds.get(which) ||
         bot.cmds.find(cmd => cmd.aliases && cmd.aliases.includes(which)) || {
           file: false
         }
       ).file;
-      if (!file) {
-        file = walkSync('./commands/');
-        if (
-          !file.some(
-            file => path.basename(file, '.js') === path.basename(which, '.js')
-          )
-        )
-          return false;
-        file = file.filter(
-          file => path.basename(file, '.js') === path.basename(which, '.js')
-        )[0];
-      }
+      if (!file) file = files.filter(f => path.basename(f, '.js') === which)[0];
+      if (!file || !file.name.endsWith('js')) return false;
       delete require.cache[require.resolve(`.${path.sep}${file}`)];
       const command = require(`.${path.sep}${file}`);
-      if (command && command.name && command.run)
+      if (command && command.name && command.run) {
         bot.cmds.set(command.name, {
           ...command,
           ...{ file: file }
         });
-      console.log(
-        `- loaded ${
-          command.mod ? 'mod' : 'general'
-        } command: ${((file = file.split(path.sep)),
-        file.slice(1, file.length).join(path.sep))}`
-      );
+        console.log(
+          `- ${type}ed ${
+            command.mod ? 'mod' : 'general'
+          } command: ${((file = file.split(path.sep)),
+          file.slice(1, file.length).join(path.sep))}`
+        );
+      }
     } else {
-      bot.cmds = bot.collection();
-      const commands = walkSync('./commands');
-      for (const file of commands) {
+      if (bot.cmds) type = 'reload';
+      bot.cmds = new bot.collection();
+      for (let file of files) {
         if (path.extname(file) === '.js') {
           delete require.cache[require.resolve(`.${path.sep}${file}`)];
-          const command = require(`.${path.sep}${file}`);
+          const event = require(`.${path.sep}${file}`);
           if (command && command.name && command.run)
             bot.cmds.set(command.name, {
               ...command,
@@ -161,60 +135,28 @@ bot.load = (what, which, type) => {
             });
         }
       }
-      console.log('- loaded commands');
+      console.log(`- ${type}ed commands`);
     }
   }
-  if (!what || what === 'event') {
-    if (which) {
-      let file = walkSync('./events');
-      if (
-        !file.some(
-          name => path.basename(name, '.js') === path.basename(which, '.js')
-        )
-      )
-        return false;
-      file = file.filter(
-        name => path.basename(name, '.js') === path.basename(which, '.js')
-      )[0];
-      delete require.cache[require.resolve(`.${path.sep}${file}`)];
-      const event = require(`.${path.sep}${file}`);
-      if (event && event.trigger) {
-        if (bot.client.listeners(which)[0])
-          bot.client.removeListener(which, bot.client.listeners(which)[0]);
-        bot.client.on(which, (...args) => event.trigger(bot, ...args));
-        console.log(
-          `- loaded event: ${((file = file.split(path.sep)),
-          file.slice(1, file.length).join(path.sep))}`
-        );
-      }
-    } else {
-      const events = walkSync('./events');
-      for (const file of events) {
-        if (path.extname(file) === '.js') {
-          delete require.cache[require.resolve(`.${path.sep}${file}`)];
-          const event = require(`.${path.sep}${file}`);
-          if (event && event.trigger) {
-            if (bot.client.listeners(path.basename(file, '.js'))[0])
-              bot.client.removeListener(
-                path.basename(file, '.js'),
-                bot.client.listeners(path.basename(file, '.js'))[0]
-              );
-            bot.client.on(path.basename(file, '.js'), (...args) =>
-              event.trigger(bot, ...args)
-            );
-          }
-        }
-      }
-      console.log('- loaded events');
-    }
+  switch (what) {
+    case 0:
+    case 'config':
+      return await config();
+      break;
+
+    case 1:
+    case 'events':
+      return await events();
+      break;
+
+    case 2:
+    case 'commands':
+      return await commands();
+      break;
+
+    default:
+      await Promise.all([config(), events(), commands()]);
+      return true;
   }
-  return true;
 };
-bot.load();
-
-// set up cleverbot
-const cleverbot = require('cleverbot.io');
-bot.clever = new cleverbot(bot.config.cleverUser, bot.config.cleverKey);
-
-// log the bot in
-bot.client.login(bot.config.TOKEN);
+bot.load().then(() => bot.connect());

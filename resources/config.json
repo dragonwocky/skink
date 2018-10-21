@@ -8,7 +8,7 @@
   "invite": "https://discordapp.com/oauth2/authorize?client_id=492185124948148224&scope=bot&permissions=268463174",
   "embedColour": 11730954,
   "status": {
-    "type": "WATCHING",
-    "value": "for {PREFIX}help | {SERVERCOUNT}"
+    "type": 3,
+    "value": "for --help | {SERVERCOUNT}"
   }
 }

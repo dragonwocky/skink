@@ -1,6 +1,6 @@
 # Skink
 
-A multi-purpose bot built with [discord.js](https://discord.js.org).
+A multi-purpose [Discord](https://discordapp.com) bot built with [Eris](https://abal.moe/Eris).
 
 - A config file contains various settings for the bot, including customising the bot's status.
 - A few base commands and some extra fun commands.
@@ -36,18 +36,20 @@ Default General Prefix: `--`
 
 Default Mod Prefix: `%%`
 
-| Name           | Description                                                                                   | Aliases | Usage (`<required> [optional]`)           | Category          |
-| -------------- | --------------------------------------------------------------------------------------------- | ------- | ----------------------------------------- | ----------------- |
-| `mod`          | Sets the moderator role (users with it can run moderator commands regardless of permissions). |         | `mod <role\|check\|unset>`                | Configuration     |
-| `channel`      | Enables or disables use of the bot in a certain channel.                                      |         | `channel <enable\|disable\|list> [which]` | Configuration     |
-| `command`      | Enables or disables use of a certain command in this server.                                  |         | `channel <enable\|disable\|list> [which]` | Configuration     |
-| `serverprefix` | Sets the prefix for communicating with this bot on this server.                               |         | `serverprefix <prefix>`                   | Configuration     |
-| `ban`          | Bans a user for a specified reason.                                                           |         | `ban <user> [reason`                      | Server Management |
-| `pardon`       | Pardons (unbans) a user for a specified reason.                                               | `unban` | `pardon <user> [reason]`                  | Server Management |
-| `kick`         | Kicks a user for a specified reason.                                                          |         | `kick <user> [reason]`                    | Server Management |
-| `mute`         | Mutes a user.                                                                                 |         | `mute <user> [seconds]`                   | Server Management |
-| `unmute`       | Unmutes a user.                                                                               |         | `unmute <user>`                           | Server Management |
-| `prune`        | Removes the specified number of messages.                                                     |         | `prune <1-99>`                            | Server Management |
+| Name           | Description                                                     | Aliases | Usage (`<required> [optional]`)           | Category          |
+| -------------- | --------------------------------------------------------------- | ------- | ----------------------------------------- | ----------------- |
+| `mod`          | Sets the moderator role.                                        |         | `mod <role\|check\|unset>`                | Configuration     |
+| `channel`      | Enables or disables use of the bot in a certain channel.        |         | `channel <enable\|disable\|list> [which]` | Configuration     |
+| `command`      | Enables or disables use of a certain command in this server.    |         | `channel <enable\|disable\|list> [which]` | Configuration     |
+| `serverprefix` | Sets the prefix for communicating with this bot on this server. |         | `serverprefix <prefix>`                   | Configuration     |
+| `ban`          | Bans a user for a specified reason.                             |         | `ban <user> [reason`                      | Server Management |
+| `pardon`       | Pardons (unbans) a user for a specified reason.                 | `unban` | `pardon <user> [reason]`                  | Server Management |
+| `kick`         | Kicks a user for a specified reason.                            |         | `kick <user> [reason]`                    | Server Management |
+| `mute`         | Mutes a user.                                                   |         | `mute <user> [seconds]`                   | Server Management |
+| `unmute`       | Unmutes a user.                                                 |         | `unmute <user>`                           | Server Management |
+| `prune`        | Removes the specified number of messages.                       |         | `prune <1-99>`                            | Server Management |
+
+_These commands can only be run by users with the `ADMINISTRATOR` permission or users with the role set by the `mod` command._
 
 #### Required Permissions
 
@@ -62,6 +64,7 @@ Default Mod Prefix: `%%`
 - Rooms: when enabled by mods, users can run `room` and create a channel in a set category named after them, having complete moderation over that channel.
 - Voting system: round 1, register by voting; round 2, optionally change vote (if wanting to vote for winners).
 - Games: Hangman, Noughts & Crosses, Connect4, Battles.
+- Mod logging.
 - Tags (custom commands).
 - Ranks/experience system. Including decay, roles based on position not just level, maybe way to "battle" other users for their xp?
 - Starboard (add x starred msgs to x channel).
@@ -97,14 +100,14 @@ _Skink is licensed under the MIT License (see the [LICENSE](LICENSE) file)._
   // decimal colour - below is https://www.colorhexa.com/b3000a
   "embedColour": 11730954,
   "status": {
-    // available: PLAYING (Playing), LISTENING (Listening to) and WATCHING (Watching)
-    "type": "WATCHING",
-    // available: {PREFIX} (prefix set above) and {SERVERCOUNT} (example: 37 servers)
-    "value": "for {PREFIX}help | {SERVERCOUNT}"
+    // available: 0 (Playing), 2 (Listening to) and 3 (Watching)
+    "type": 3,
+    // available: {SERVERCOUNT} (example: 37 servers)
+    "value": "for --help | {SERVERCOUNT}"
   },
-  "cleverUser": "cleverbot.io API User",
-  "cleverKey": "cleverbot.io API Key",
-  "TOKEN": "discord bot token"
+  "cleverUser": "(cleverbot.io)",
+  "cleverKey": "(cleverbot.io)",
+  "TOKEN": "(discord)"
 }
 ```
 
@@ -120,6 +123,8 @@ module.exports = {
   category: 'General',
   // string: '<required> [optional]'
   usage: false,
+  // string: 'example @user bcos why not'
+  example: false,
   // required arg count - number: 1
   args: false,
   // in seconds
@@ -131,7 +136,7 @@ module.exports = {
   // user IDs blocked from running this command
   blocked: []
   // if value: only these user IDs can run this command
-  only:[]
+  only: []
   
   run: (bot, message, data) => {
     // do stuff
@@ -153,27 +158,21 @@ exports.trigger = (bot, arg1, arg2, etc) => {
 #### API
 
 ```js
-bot {
-  func {
-    line() = // underlines string, overlines string or does both
-    join() = // formats joining array, usually used with commas and a word like "and" or "or"
-    user() = // returns member from search or sender with data
-    member() = // returns member from search
-  }
-  pack {
-    discord = // the discord.js package
-    moment = // the moment.js package
+bot // the eris client object (extension of eventEmitter)
+{
+  utils {
+    line(string, char, where) = // underlines string, overlines string or does both
+    join(array, char, word) = // formats joining array, usually used with commas and a word like "and" or "or"
+    flatten(array) = // flattens array
+    walk(dir) = // recusively read directory contents
   }
   db {
     users = // user database - see below
     guilds = // guild database - see below
   }
-  clever = // the cleverbot.io package (initialised and signed into)
   load() = // manages loading/reloading the config, all commands & all events
-  embed() = // returns new pre-formatted embed
   collection() = // returns new collection (extension of map)
   config = // returns data from config.json
-  client = // returns discord client object (extension of eventEmitter)
   cmds = // returns all loaded commands
   cooldowns = // returns current user command cooldowns
 }
