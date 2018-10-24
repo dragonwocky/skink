@@ -6,7 +6,6 @@
 
 const fs = require('fs'),
   path = require('path'),
-  { promisify } = require('util'),
   secrets = require('./resources/secrets.json');
 
 const Eris = require('eris'),
@@ -17,6 +16,12 @@ const Eris = require('eris'),
   });
 bot.collection = Eris.Collection;
 
+let utils = require('./resources/utils.js');
+for (const util in utils)
+  if (utils.hasOwnProperty(util) && typeof utils[util] == 'function')
+    utils[util] = utils[util].bind(bot);
+bot.utils = utils;
+
 const Datastore = require('nedb');
 bot.db = {
   users: new Datastore({ filename: '.data/users.db', autoload: true }),
@@ -26,7 +31,7 @@ bot.db.users.ensureIndex({ fieldName: '_id', unique: true });
 bot.db.users.persistence.setAutocompactionInterval(90000);
 bot.db.guilds.ensureIndex({ fieldName: '_id', unique: true });
 bot.db.guilds.persistence.setAutocompactionInterval(90000);
-[
+const keys = [
   'loadDatabase',
   'insert',
   'find',
@@ -36,19 +41,9 @@ bot.db.guilds.persistence.setAutocompactionInterval(90000);
   'remove',
   'ensureIndex',
   'removeIndex'
-].forEach(method => {
-  bot.db.guilds[`${method}Async`] = promisify(bot.db.guilds[method]).bind(
-    bot.db.guilds
-  );
-  bot.db.users[`${method}Async`] = promisify(bot.db.users[method]).bind(
-    bot.db.users
-  );
-});
-
-let utils = require('./resources/utils.js');
-for (const util in utils)
-  if (utils.hasOwnProperty(util)) utils[util] = utils[util].bind(bot);
-bot.utils = utils;
+];
+bot.db.guilds = utils.promisifyAll(bot.db.guilds, keys);
+bot.db.users = utils.promisifyAll(bot.db.users, keys);
 
 bot.load = async (what, which) => {
   async function config() {

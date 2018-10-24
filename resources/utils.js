@@ -49,6 +49,13 @@ module.exports = {
       ).replace(/ +/g, ' ');
   },
 
+  // async-ifies JS's built-in forEach
+  async foreachAsync(array, callback) {
+    for (let i = 0; i < array.length; i++) {
+      await callback(array[i], i, array);
+    }
+  },
+
   // [1, [[2, [3], [4]], [5]], [6], [[7]]] => [1, 2, 3, 4, 5, 6, 7]
   flatten(array) {
     return array.reduce(
@@ -56,6 +63,14 @@ module.exports = {
         flat.concat(Array.isArray(next) ? this.utils.flatten(next) : next),
       []
     );
+  },
+
+  // method(thing, callback) => methodAsync(thing)
+  promisifyAll(object, keys = Object.getOwnPropertyNames(object)) {
+    for (const method in object)
+      if (keys.includes(method) && typeof object[method] == 'function')
+        object[`${method}Async`] = promisify(object[method]).bind(object);
+    return object;
   },
 
   // recusively read directory contents
@@ -72,9 +87,49 @@ module.exports = {
     return this.utils.flatten(list);
   },
 
-  //
+  async muted(guildID) {
+    const guildDB = await this.utils.guildDB(guildID),
+      guild = this.guilds.get(guildID);
+    let role =
+      guild.roles.get(guildDB.roles ? guildDB.roles.muted : '') ||
+      guild.roles.find(role => role.name.toLowerCase() === 'muted');
+    if (!role)
+      await this.utils.foreachAsync(
+        Array.from(
+          guild.channels.filter(channel =>
+            channel.permissionsOf(this.user.id).has('manageRoles')
+          )
+        ),
+        async channel => {
+          if (!role) {
+            role = await guild.createRole(
+              {
+                name: 'Muted'
+              },
+              'Create muted role for use with the mute and unmute commands.'
+            );
+          }
+          if (channel.type !== 0) return;
+          // 2112 = send messages + add reactions
+          channel.editPermission(
+            role.id,
+            0,
+            2112,
+            'role',
+            'Ensure muted members cannot send messages in this channel.'
+          );
+        }
+      );
+    this.db.guilds.updateAsync(
+      { _id: guildID },
+      { $set: { 'roles.muted': role.id } },
+      {}
+    );
+    return role;
+  },
+
+  // returns guild database (creates it if neccessary)
   async guildDB(id) {
-    console.log(await this.utils.walk('./events'));
     let get = await this.db.guilds
       .findOneAsync({
         _id: id
@@ -82,18 +137,54 @@ module.exports = {
       .catch(console.error);
     if (!get) {
       get = await this.db.guilds.insert({
-        _id: id,
-        disabled: {
-          channels: [],
-          commands: []
-        }
+        _id: id
       });
       console.log(
         `- Added the guild ${
           this.guilds.get(id).name
         } (ID: ${id}) to the database.`
       );
-    } else return get;
+    }
+    return {
+      ...{
+        disabled: {
+          channels: [],
+          commands: []
+        },
+        roles: {
+          mod: '',
+          muted: ''
+        }
+      },
+      ...get
+    };
+  },
+
+  // returns user database (creates it if neccessary)
+  async userDB(id) {
+    let get = await this.db.users
+      .findOneAsync({
+        _id: id
+      })
+      .catch(console.error);
+    if (!get) {
+      get = await this.db.users.insert({
+        _id: id
+      });
+      const user = this.users.get(id);
+      console.log(
+        `- Added the ${user.bot ? 'bot' : 'user'} ${user.username}#${
+          user.discriminator
+        } (ID: ${id}) to the database.`
+      );
+    }
+    return {
+      ...{
+        scales: 0,
+        icecream: 0
+      },
+      ...get
+    };
   }
 
   /* to be dealt with

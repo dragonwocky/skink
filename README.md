@@ -163,8 +163,12 @@ bot // the eris client object (extension of eventEmitter)
   utils {
     line(string, char, where) = // underlines string, overlines string or does both
     join(array, char, word) = // formats joining array, usually used with commas and a word like "and" or "or"
+    foreachAsync(array, callback) = // async-ifies JS's built-in forEach
     flatten(array) = // flattens array
+    promisifyAll(object, keys = Object.getOwnPropertyNames(object)) = // convert all or specified callbacks of object methods to promises
     walk(dir) = // recusively read directory contents
+    guildDB(id) = // returns guild database (creates it if neccessary)
+    userDB(id) = // returns user database (creates it if neccessary)
   }
   db {
     users = // user database - see below
@@ -187,6 +191,10 @@ guilds [
     disabled {
       channels = // array of disabled channel IDs
       commands = // array of disabled command names
+    }
+    roles {
+      mod = // users with this role can run moderation commands
+      muted = // the role used to mute users
     }
     prefix = // custom guild prefix for general commands
   }
